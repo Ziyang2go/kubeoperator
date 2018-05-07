@@ -1,0 +1,11 @@
+{
+  "name": "kubeoperator",
+  "version": "1.0.0",
+  "main": "index.mjs",
+  "license": "MIT",
+  "dependencies": {
+    "@kubernetes/client-node": "^0.3.0",
+    "json-stream": "^1.0.0",
+    "kubernetes-client": "^5.2.0"
+  }
+}
