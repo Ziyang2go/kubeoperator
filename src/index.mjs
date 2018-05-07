@@ -5,41 +5,50 @@ const Client = k8s.Client;
 const config = k8s.config;
 
 class KubeOp {
-  constructor() {
+  constructor(concurrentJob) {
     const client = new Client({
-      config: config.fromKubeconfig(),
+      config: config.fromKubeconfig(), //config.getInCluster()
       version: '1.9',
     });
     this.client = client;
+    this.concurrentJob = concurrentJob;
   }
 
   async load() {
     await this.client.loadSpec();
   }
 
-  async getNamespaces() {
-    const namespaces = await this.client.api.v1.namespaces.get();
-    return namespaces;
-  }
-
-  async getJobs() {
+  async evaluateJobs() {
     const res = await this.client.apis.batch.v1.namespaces('blue').jobs.get();
     const jobs = res.body && res.body.items;
-    return jobs.map(item => {
+    const activeJobs = jobs.filter(item => {
       const metadata = item.metadata;
       const status = item.status;
       const conditions = status.conditions;
       const isSuccess = conditions.find(item => item.type === 'Complete');
-      return {
-        name: metadata && metadata.name,
-        status: isSuccess ? 'ok' : null,
-      };
+      return !isSuccess;
     });
+    if (activeJobs.length > concurrentJob) return;
+    await this.queueJob();
   }
 
   async queueJob() {}
 
-  async watchJob() {}
+  async watchJobs() {
+    const stream = this.client.apis.batch.v1.watch
+      .namespaces('blue')
+      .jobs.getStream();
+    const jsonStream = new JSONStream();
+    stream.pipe(jsonStream);
+    jsonStream.on('data', object => {
+      const type = object.type;
+      const job = object.object;
+      const status = job.status;
+      if (status.succeeded) {
+        await this.evaluateJobs();
+      }
+    });
+  }
 }
 
 (async function main() {
@@ -47,7 +56,7 @@ class KubeOp {
     const k8sOp = new KubeOp();
     await k8sOp.load();
     const jobs = await k8sOp.getJobs();
-    console.log(jobs);
+    await k8sOp.watchJobs();
   } catch (e) {
     console.log(e);
     process.exit(1);

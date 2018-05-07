@@ -1,0 +1,4 @@
+apiVersion: v1
+description: kubernetes operator for cb jobs
+name: kubeop
+version: 0.1.0
