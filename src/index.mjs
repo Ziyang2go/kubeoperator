@@ -1,10 +1,11 @@
-import KubeOp from './kubeop';
+import JobOp from './operator';
 
 (async function main() {
   try {
-    const k8sOp = new KubeOp();
-    await k8sOp.load();
-    await k8sOp.watchJobs();
+    const jobop = new JobOp(10);
+    await jobop.load();
+    await jobop.evaluateJobs();
+    await jobop.watchJobs();
   } catch (e) {
     console.log(e);
     process.exit(1);

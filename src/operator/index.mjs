@@ -4,7 +4,7 @@ import JSONStream from 'json-stream';
 const Client = k8s.Client;
 const config = k8s.config;
 
-export default class KubeOp {
+export default class JobOp {
   constructor(concurrentJob) {
     const client = new Client({
       config: config.fromKubeconfig(), //config.getInCluster()
@@ -24,11 +24,9 @@ export default class KubeOp {
     const activeJobs = jobs.filter(item => {
       const metadata = item.metadata;
       const status = item.status;
-      const conditions = status.conditions;
-      const isSuccess = conditions.find(item => item.type === 'Complete');
-      return !isSuccess;
+      return status.active;
     });
-    if (activeJobs.length > concurrentJob) return;
+    if (activeJobs.length > this.concurrentJob) return;
     await this.queueJob();
   }
 
@@ -58,7 +56,7 @@ export default class KubeOp {
         const type = object.type;
         const job = object.object;
         const status = job.status;
-        if (type === 'MODIFIED' && status.succeeded) {
+        if (type === 'MODIFIED' && (status.succeeded || status.failed)) {
           await this.evaluateJobs();
         }
       } catch (e) {

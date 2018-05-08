@@ -5,7 +5,6 @@ const template = {
     labels: {},
   },
   spec: {
-    activeDeadlineSeconds: 3600,
     backoffLimit: 3,
     template: {
       metadata: {},
