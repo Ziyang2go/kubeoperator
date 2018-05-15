@@ -1,0 +1,36 @@
+export default {
+  kind: 'CustomResourceDefinition',
+  spec: {
+    scope: 'Namespaced',
+    version: 'v1',
+    group: 'exocortex.com',
+    names: {
+      shortNames: ['wf'],
+      kind: 'Workflow',
+      plural: 'workflows',
+      singular: 'workflow',
+      ListKind: 'WorkflowList',
+    },
+    inputs: {},
+    succeeded: {},
+    failed: {},
+    nodes: [],
+    containers: [],
+    hostNetwork: true,
+    dnsPolicy: 'ClusterFirstWithHostNet',
+    restartPolicy: 'Never',
+  },
+  apiVersion: 'apiextensions.k8s.io/v1beta1',
+  metadata: {
+    name: 'workflows.exocortex.com',
+  },
+  status: {
+    conditions: [],
+    startTime: '',
+    lastUpdateTime: '',
+    completeTime: '',
+    succeeded: '',
+    failed: '',
+    active: '',
+  },
+};
